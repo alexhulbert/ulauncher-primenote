@@ -1,0 +1,15 @@
+{
+    "required_api_version": "^2.0.0",
+    "name": "PrimeNote Search",
+    "description": "Quickly search and open PrimeNote notes",
+    "developer_name": "alexhulbert",
+    "icon": "note.svg",
+    "preferences": [
+        {
+            "id": "pnote_kw",
+            "type": "keyword",
+            "name": "Trigger keyword",
+            "default_value": "n"
+        }
+    ]
+}
