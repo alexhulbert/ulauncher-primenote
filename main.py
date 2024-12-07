@@ -32,7 +32,7 @@ class PrimeNote:
                     "label": file[:-4],  # Remove .txt extension for display
                     "path": os.path.join(self.notes_dir, file)
                 })
-        return notes
+        return sorted(notes, key=lambda x: x["label"].lower())  # Sort alphabetically
 
     def open_note(self, note_data):
         subprocess.run(["pnote", "-n", "show", "-p", note_data["filename"]])
@@ -46,11 +46,23 @@ class PrimeNoteExtension(Extension):
         self.primenote = PrimeNote()
 
     def get_search_results(self, query):
-        query = query.lower() if query else ""
         notes = self.primenote.get_notes()
         items = []
         
-        # Use fuzzy matching to find relevant notes
+        # If no query, return all notes
+        if not query:
+            for note in notes[:20]:  # Limit to 20 items
+                items.append(
+                    ExtensionSmallResultItem(
+                        icon=Utils.get_path("note.svg"),
+                        name=note["label"],
+                        on_enter=ExtensionCustomAction(note)
+                    )
+                )
+            return items
+        
+        # If there's a query, use fuzzy matching
+        query = query.lower()
         matches = process.extract(
             query,
             choices=map(lambda n: n["label"], notes),
@@ -58,7 +70,6 @@ class PrimeNoteExtension(Extension):
             scorer=fuzz.partial_ratio
         )
         
-        # Create result items for matches
         for match in matches:
             note = next((n for n in notes if n["label"] == match[0]), None)
             if note and match[1] > 80:  # Only show results with >80% match
